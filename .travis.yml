@@ -2,7 +2,7 @@ sudo: false
 
 language: go
 
-go_import_path: github.com/bartekn/throttled
+go_import_path: github.com/stellar/throttled
 
 go:
   - "1.11.x"
