@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/bartekn/throttled"
+	"github.com/stellar/throttled"
 )
 
 func TestVaryBy(t *testing.T) {

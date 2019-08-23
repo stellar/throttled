@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bartekn/throttled"
+	"github.com/stellar/throttled"
 )
 
 type clockFixed time.Time
