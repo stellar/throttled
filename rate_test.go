@@ -13,6 +13,51 @@ func (cf clockFixed) Now() time.Time {
 	return time.Time(cf)
 }
 
+func TestRateLimit_DefaultClock_InsideWindow(t *testing.T) {
+	rq := throttled.RateQuota{MaxRate: throttled.PerHour(1), MaxBurst: 4}
+	rl, err := throttled.NewGCRARateLimiter(100, rq)
+	if err != nil {
+		t.Fatal(err)
+	}
+	limited, _, err := rl.RateLimit("foo", 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if limited {
+		t.Fatal("expected not to be limited because of limit of 5 (maxburst+1)")
+	}
+	limited, _, err = rl.RateLimit("foo", 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !limited {
+		t.Fatal("expected to be limited after 5 attempts, because of limit of 5 (maxburst+1)")
+	}
+}
+
+func TestRateLimit_DefaultClock_OutsideWindow(t *testing.T) {
+	rq := throttled.RateQuota{MaxRate: throttled.PerSec(1), MaxBurst: 4}
+	rl, err := throttled.NewGCRARateLimiter(100, rq)
+	if err != nil {
+		t.Fatal(err)
+	}
+	limited, _, err := rl.RateLimit("foo", 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if limited {
+		t.Fatal("expected not to be limited because of limit of 5 (maxburst+1)")
+	}
+	time.Sleep(1 * time.Second)
+	limited, _, err = rl.RateLimit("foo", 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if limited {
+		t.Fatal("expected not to be limited because even though limit of 5 (maxburst+1) has exceeded, we're into a new second because of the 3 second sleep")
+	}
+}
+
 func TestRateLimit(t *testing.T) {
 	limit := 5
 	rq := throttled.RateQuota{MaxRate: throttled.PerSec(1), MaxBurst: limit - 1}
